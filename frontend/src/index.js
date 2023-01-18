@@ -1,16 +1,16 @@
-import React from "react";
-import { render } from 'react-dom';
+import React from 'react'
+import {render} from 'react-dom'
 
-import {Header, Routes} from "./components";
+import {Routes} from './components'
 
 function App() {
   return (
     <main>
-      <Header />
+      {/* <Header /> */}
       <Routes />
     </main>
   )
 }
 
-const rootElement = document.getElementById("root")
+const rootElement = document.getElementById('root')
 render(<App />, rootElement)

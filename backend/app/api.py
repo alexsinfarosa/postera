@@ -37,7 +37,12 @@ def make_routes():
     routes = []
     with open("/Users/alex/code/webdev_interview_challenge-master/backend/app/routes.json", 'r+') as f:
         routes = json.load(f)
+
+    # implement a function that converts the routes data to a tree data structure
+    # and return it
     return routes
+
+    
 
 def draw_molecule(smiles: str):
     mol = Chem.MolFromSmiles(smiles)

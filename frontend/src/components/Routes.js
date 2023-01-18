@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react'
 import {createUseStyles} from 'react-jss'
 import Tree from 'react-d3-tree'
 import json from '../routes.json'
+import {useCenteredTree} from '../utils'
 
 // create a tree from the json
 function makeTree(json) {
@@ -9,71 +10,115 @@ function makeTree(json) {
 
   for (let i = 0; i < json.length; i++) {
     const route = json[i]
-    route.route = i + 1
-    route.children = []
+    const {score, molecules, reactions, disconnections} = route
+    const name = reactions[0].target
+    const attributes = {score, molecules, disconnections}
+    const children = []
 
-    const {reactions} = route
     for (let j = 0; j < reactions.length; j++) {
       const reaction = reactions[j]
-      const {name, target, sources} = reaction
+      const {name, target, sources, smartsTemplate} = reaction
 
-      route.children.push({
+      children.push({
         name: target,
-        attributes: {name},
-        children: sources.map(source => ({name: source})),
+        attributes: {name, smartsTemplate},
+        children: sources.map(source => ({name: source, children: []})),
       })
     }
 
-    tree.children.push({
-      name: `Route ${i + 1}`,
-      children: route.children,
-    })
+    tree.children.push({name, attributes, children})
   }
 
   return tree
 }
 const tree = makeTree(json)
-console.log(tree)
+// console.log(tree)
 
 // use jss styling
 const useRoutesStyles = createUseStyles({
   foundation: {
-    margin: '10px',
-    backgroundColor: '#f8fafc',
-    height: '100vh',
+    height: '100%',
     width: '100%',
-    overflow: 'auto',
-    fontFamily: 'sans-serif',
-    fontSize: '14px',
-    color: '#333',
   },
-  node__root: {
-    '& circle': {
-      fill: 'red',
-      r: 20,
-      stroke: 'red',
-      strokeWidth: 1,
-    },
-  },
-  node__branch: {
-    '& circle': {
-      fill: 'green',
-      r: 20,
-      stroke: 'green',
-      strokeWidth: 1,
-    },
-  },
-  node__leaf: {
-    '& circle': {
-      fill: 'orange',
-      r: 20,
-      stroke: 'orange',
-      strokeWidth: 1,
-    },
+  smiles: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 })
 
+const containerStyles = {
+  width: '100vw',
+  height: '100vh',
+}
+
+const renderForeignObjectNode = ({
+  nodeDatum,
+  toggleNode,
+  foreignObjectProps,
+  classes,
+}) => {
+  return (
+    <foreignObject {...foreignObjectProps}>
+      <button
+        onClick={toggleNode}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: 'column',
+          backgroundColor: 'white',
+          width: 200,
+          height: 340,
+          border: '1px solid #e2e8f0',
+          borderRadius: 6,
+          padding: 10,
+        }}
+      >
+        <header>HEADER</header>
+        <section
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 2,
+            overflow: 'auto',
+            margin: '2px 0',
+            backgroundColor: 'pink',
+            width: '100%',
+          }}
+        >
+          SVG
+        </section>
+        <footer
+          style={{
+            flex: 1,
+            margin: '2px 0',
+            overflow: 'auto',
+            width: '100%',
+            backgroundColor: 'orange',
+          }}
+        >
+          <p
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              padding: '0 4px',
+            }}
+          >
+            {nodeDatum.name}
+          </p>
+        </footer>
+      </button>
+    </foreignObject>
+  )
+}
+
 export const Routes = () => {
+  const nodeSize = {x: 300, y: 450}
+  const separation = {siblings: 1, nonSiblings: 2}
+  const foreignObjectProps = {width: nodeSize.x, height: nodeSize.y, x: -100}
+  const [dimensions, translate, containerRef] = useCenteredTree()
   const styles = useRoutesStyles()
   const [routes, setRoutes] = useState([])
 
@@ -96,19 +141,23 @@ export const Routes = () => {
 
   return (
     <div className={styles.foundation}>
-      {tree.children.map(route => (
-        <Tree
-          key={route.name}
-          data={route.children}
-          orientation="vertical"
-          rootNodeClassName={styles.node__root}
-          branchNodeClassName={styles.node__branch}
-          leafNodeClassName={styles.node__leaf}
-          translate={{x: 600, y: 200}}
-        />
+      {tree.children.map((route, i) => (
+        <div key={i} style={containerStyles} ref={containerRef}>
+          <Tree
+            data={route.children}
+            translate={translate}
+            dimensions={dimensions}
+            nodeSize={nodeSize}
+            separation={separation}
+            transitionDuration="1000"
+            pathFunc="step"
+            renderCustomNodeElement={rd3tProps =>
+              renderForeignObjectNode({...rd3tProps, foreignObjectProps})
+            }
+            orientation="vertical"
+          />
+        </div>
       ))}
-
-      {/* <pre>{JSON.stringify(tree, null, 2)}</pre> */}
     </div>
   )
 }
