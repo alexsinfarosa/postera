@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 import rdkit.Chem as Chem
@@ -34,15 +34,25 @@ app.add_middleware(
 def make_routes():
     # TODO: use this method to return routes as a tree data structure.
     # routes are found in the routes.json file
-    routes = []
+    data = []
     with open("/Users/alex/code/webdev_interview_challenge-master/backend/app/routes.json", 'r+') as f:
-        routes = json.load(f)
+        data = json.load(f)
 
-    # implement a function that converts the routes data to a tree data structure
-    # and return it
+    def make_node(name):
+        return {'name': name, 'children': []}
+
+    routes = []
+    for i, route in enumerate(data, start=1):
+        name = 'route-' + str(i)
+        attributes = {'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections']}
+        children = []
+
+        for reaction in route['reactions']:
+            children.append({'name': reaction['target'], 'attributes': {'reactionName': reaction['name']}, 'children': list(map(make_node, reaction['sources']))})
+
+        routes.append({'name': name, 'attributes': attributes, 'children': children})
+
     return routes
-
-    
 
 def draw_molecule(smiles: str):
     mol = Chem.MolFromSmiles(smiles)
@@ -58,10 +68,9 @@ async def read_root() -> dict:
 @app.get("/molecule", tags=["molecule"])
 async def get_molecule(smiles: str) -> dict:
     molecule = draw_molecule(smiles)
-    print(molecule)
     # TODO: return svg image
     return {
-        "data": molecule,
+        "data": Response(content=molecule, media_type="image/svg+xml"),
     }
 
 @app.get("/routes", tags=["routes"])

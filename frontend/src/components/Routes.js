@@ -5,30 +5,96 @@ import json from '../routes.json'
 import {useCenteredTree} from '../utils'
 
 // create a tree from the json
-function makeTree(json) {
-  const tree = {name: 'root', children: []}
+// function makeTree(json) {
+//   const tree = []
 
+//   for (let i = 0; i < json.length; i++) {
+//     const route = json[i]
+//     const {score, molecules, reactions, disconnections} = route
+//     const name = `Route-${i}`
+//     const attributes = {score, molecules, disconnections}
+//     const children = []
+
+//     for (let j = 0; j < reactions.length; j++) {
+//       const reaction = reactions[j]
+//       const {name, target, sources, smartsTemplate} = reaction
+
+//       children.push({
+//         name: target,
+//         attributes: {reactionName: name, smartsTemplate},
+//         children: sources.map(source => ({name: source, children: []})),
+//       })
+//     }
+
+//     tree.push({name, attributes, children})
+//   }
+
+//   return tree
+// }
+// const tree = makeTree(json)
+// console.log(tree)
+
+// make a tree from the json data (see above) using recursion.
+// This is a bit more complicated, but it's a good exercise
+function makeTree(json) {
+  let tree = []
   for (let i = 0; i < json.length; i++) {
     const route = json[i]
-    const {score, molecules, reactions, disconnections} = route
-    const name = reactions[0].target
-    const attributes = {score, molecules, disconnections}
-    const children = []
+    const {score, molecules, reactions} = route
 
-    for (let j = 0; j < reactions.length; j++) {
-      const reaction = reactions[j]
-      const {name, target, sources, smartsTemplate} = reaction
-
-      children.push({
-        name: target,
-        attributes: {name, smartsTemplate},
-        children: sources.map(source => ({name: source, children: []})),
-      })
+    let name = ''
+    let attributes = {score}
+    if (reactions.length === 1) {
+      const {target, sources} = reactions[0]
+      name = target
+      attributes = {
+        id: i,
+        ...attributes,
+        reaction: {...reactions[0]},
+        molecule: {...molecules.find(molecule => molecule.smiles === target)},
+        smiles: molecules.map(m => m.smiles),
+      }
+      let children = []
+      for (const source of sources) {
+        const found = molecules.find(molecule => molecule.smiles === source)
+        if (found) {
+          children.push({
+            name: source,
+            attributes: {molecule: {...found}},
+            children: [],
+          })
+        }
+      }
+      tree.push({name, attributes, children})
+    } else {
+      const reaction0 = reactions[0]
+      const reaction1 = reactions[1]
+      if (reaction1.sources.includes(reaction0.target)) {
+        name = reaction0.target
+        attributes = {
+          id: i,
+          ...attributes,
+          reaction: {...reaction0},
+          molecule: {
+            ...molecules.find(molecule => molecule.smiles === reaction0.target),
+          },
+          smiles: molecules.map(m => m.smiles),
+        }
+        let children = []
+        for (const source of reaction0.sources) {
+          const found = molecules.find(molecule => molecule.smiles === source)
+          if (found) {
+            children.push({
+              name: source,
+              attributes: {molecule: {...found}},
+              children: [],
+            })
+          }
+        }
+        tree.push({name, attributes, children})
+      }
     }
-
-    tree.children.push({name, attributes, children})
   }
-
   return tree
 }
 const tree = makeTree(json)
@@ -36,8 +102,13 @@ const tree = makeTree(json)
 
 // use jss styling
 const useRoutesStyles = createUseStyles({
+  main: {
+    display: 'flex',
+  },
+  sidebar: {flex: 1, backgroundColor: 'lightgray'},
   foundation: {
-    height: '100%',
+    flex: 2,
+    height: '100vh',
     width: '100%',
   },
   smiles: {
@@ -56,8 +127,10 @@ const renderForeignObjectNode = ({
   nodeDatum,
   toggleNode,
   foreignObjectProps,
+  svgs,
   classes,
 }) => {
+  console.log(nodeDatum)
   return (
     <foreignObject {...foreignObjectProps}>
       <button
@@ -66,15 +139,18 @@ const renderForeignObjectNode = ({
           display: 'flex',
           alignItems: 'center',
           flexDirection: 'column',
-          backgroundColor: 'white',
+          backgroundColor: '#0e7490',
           width: 200,
           height: 340,
-          border: '1px solid #e2e8f0',
-          borderRadius: 6,
+          border: '1px solid #0284c7',
+          borderRadius: 8,
           padding: 10,
+          color: '#f0f9ff',
+          fontSize: 16,
+          cursor: 'inherit',
         }}
       >
-        <header>HEADER</header>
+        <header style={{margin: '4px 0'}}>Header</header>
         <section
           style={{
             display: 'flex',
@@ -83,19 +159,34 @@ const renderForeignObjectNode = ({
             flex: 2,
             overflow: 'auto',
             margin: '2px 0',
-            backgroundColor: 'pink',
+            backgroundColor: 'white',
+            borderRadius: 8,
             width: '100%',
+            color: '#0c4a6e',
           }}
         >
-          SVG
+          {svgs && (
+            <span
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              dangerouslySetInnerHTML={{
+                __html: svgs[nodeDatum.name],
+              }}
+            />
+          )}
         </section>
+
         <footer
           style={{
             flex: 1,
             margin: '2px 0',
             overflow: 'auto',
             width: '100%',
-            backgroundColor: 'orange',
           }}
         >
           <p
@@ -121,6 +212,12 @@ export const Routes = () => {
   const [dimensions, translate, containerRef] = useCenteredTree()
   const styles = useRoutesStyles()
   const [routes, setRoutes] = useState([])
+  const [routeId, setRouteId] = useState(0)
+  const route = tree.find(route => route.attributes.id === routeId)
+  console.log(route)
+
+  const [svgs, setSvgs] = useState(null)
+  console.log(svgs)
 
   const fetchRoutes = async () => {
     const response = await fetch('http://localhost:8000/routes')
@@ -128,23 +225,55 @@ export const Routes = () => {
     // instead (see frontent terminal)
     //const response = await fetch("http://X.X.X.X:8000/routes");
     const newRoutes = await response.json()
-    // console.log(newRoutes)
+    // console.log(newRoutes.data)
     setRoutes(newRoutes.data)
   }
 
+  const fetchSvgs = async route => {
+    const smiles = route.attributes.smiles
+    const urls = smiles.map(
+      smile => `http://localhost:8000/molecule?smiles=${smile}`,
+    )
+    const responses = await Promise.all(urls.map(url => fetch(url)))
+    const jsons = await Promise.all(responses.map(res => res.json()))
+
+    let svgs = {}
+    jsons.forEach((json, i) => (svgs[smiles[i]] = json.data.body))
+    setSvgs(svgs)
+  }
+
   useEffect(() => {
+    fetchSvgs(route)
     fetchRoutes()
-  }, [])
+  }, [route])
 
   // TODO: use react-d3-tree to visualize the routes
   //   - https://www.npmjs.com/package/react-d3-tree
 
   return (
-    <div className={styles.foundation}>
-      {tree.children.map((route, i) => (
-        <div key={i} style={containerStyles} ref={containerRef}>
+    <main className={styles.main}>
+      <div className={styles.sidebar}>
+        <h1>Molecules</h1>
+        <ul>
+          {tree.map((route, i) => (
+            <li key={i}>
+              <button type="button" onClick={() => setRouteId(i)}>
+                {route.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className={styles.foundation}>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+          ref={containerRef}
+        >
           <Tree
-            data={route.children}
+            data={route}
             translate={translate}
             dimensions={dimensions}
             nodeSize={nodeSize}
@@ -152,12 +281,16 @@ export const Routes = () => {
             transitionDuration="1000"
             pathFunc="step"
             renderCustomNodeElement={rd3tProps =>
-              renderForeignObjectNode({...rd3tProps, foreignObjectProps})
+              renderForeignObjectNode({
+                ...rd3tProps,
+                foreignObjectProps,
+                svgs,
+              })
             }
             orientation="vertical"
           />
         </div>
-      ))}
-    </div>
+      </div>
+    </main>
   )
 }
