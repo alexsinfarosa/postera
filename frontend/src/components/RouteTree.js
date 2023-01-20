@@ -8,7 +8,6 @@ const useRoutesStyles = createUseStyles({
   },
   node: {
     display: 'flex',
-    alignItems: 'center',
     flexDirection: 'column',
     backgroundColor: '#0e7490',
     width: 200,
@@ -20,22 +19,19 @@ const useRoutesStyles = createUseStyles({
     fontSize: 16,
     // cursor: 'inherit',
     boxShadow: '0 8px 24px 0 #959DA5',
+    flex: 1,
   },
   svg: {
+    width: '100%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'auto',
     backgroundColor: 'white',
+    height: 150,
     borderRadius: 8,
   },
-  nodeFooter: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflow: 'auto',
-    width: '100%',
-  },
+  nodeFooter: {flex: 1, position: 'relative', height: '100%'},
   truncate: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -43,18 +39,19 @@ const useRoutesStyles = createUseStyles({
     textAlign: 'center',
   },
   btn: {
-    width: '50%',
-    margin: 'auto',
     backgroundColor: '#0e7490',
     border: '1px solid #FFF',
     color: 'white',
     padding: '8px 16px',
     textAlign: 'center',
-    textDecoration: 'none',
-    display: 'inline-block',
     fontSize: 16,
     cursor: 'pointer',
     borderRadius: 8,
+    width: '50%',
+    // margin: '0 auto',
+    position: 'absolute',
+    bottom: 0,
+    left: '25%',
   },
 })
 
@@ -99,13 +96,13 @@ const customNode = ({
 export const RouteTree = ({route, svgs}) => {
   const styles = useRoutesStyles()
 
-  const nodeSize = {x: 350, y: 500}
+  const nodeSize = {x: 350, y: 430}
   const separation = {siblings: 1, nonSiblings: 2}
   const foreignObjectProps = {
     width: nodeSize.x,
     height: nodeSize.y,
     x: -110,
-    y: -130,
+    y: -160,
   }
 
   const [dimensions, translate, containerRef] = useCenteredTree()
