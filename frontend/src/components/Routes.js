@@ -11,7 +11,7 @@ function makeTree(json) {
     let tree = {
       name: '',
       attributes: {
-        id: i,
+        id: i + 1,
         score: route.score,
         molecules: route.molecules,
         disconnections: route.disconnections,
@@ -77,26 +77,52 @@ console.log(tree)
 
 // use jss styling
 const useRoutesStyles = createUseStyles({
-  main: {
+  container: {
     display: 'flex',
+    height: '100vh',
   },
   sidebar: {
     padding: 16,
-    width: 400,
-    height: '100vh',
-    // borderRight: '1px solid #ccc',
+    width: '30%',
+  },
+  main: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    overflow: 'auto',
   },
   route: {
     width: '100%',
     height: '100vh',
     overflow: 'auto',
   },
+  routeBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    border: '1px solid #cbd5e1',
+    background: 'white',
+    color: '#334155',
+    borderRadius: 8,
+    padding: '2px 10px',
+    fontSize: 16,
+    '&:hover': {
+      backgroundColor: '#f8fafc',
+    },
+    '&:disabled': {
+      opacity: '0.5',
+      cursor: 'not-allowed',
+    },
+  },
+  spanText: {
+    marginLeft: 16,
+    marginRight: 16,
+  },
 })
 
 export const Routes = () => {
   const styles = useRoutesStyles()
   const [routes, setRoutes] = useState([])
-  const [routeId, setRouteId] = useState(15)
+  const [routeId, setRouteId] = useState(1)
   const route = tree.find(route => route.attributes.id === routeId)
   const [svgs, setSvgs] = useState(null)
 
@@ -127,19 +153,22 @@ export const Routes = () => {
   // TODO: use react-d3-tree to visualize the routes
   //   - https://www.npmjs.com/package/react-d3-tree
 
+  function handleRouteIncrement() {
+    if (routeId < routes.length) {
+      setRouteId(routeId + 1)
+    }
+  }
+
+  function handleRouteDecrement() {
+    if (routeId > 1) {
+      setRouteId(routeId - 1)
+    }
+  }
+
   return (
-    <main className={styles.main}>
-      <section className={styles.sidebar}>
+    <div className={styles.container}>
+      <aside className={styles.sidebar}>
         <h2 style={{marginBottom: 32}}>Shared Molecules</h2>
-        {/* <ul>
-          {tree.map((route, i) => (
-            <li key={i}>
-              <button type="button" onClick={() => setRouteId(i)}>
-                Route {route.attributes.id + 1}
-              </button>
-            </li>
-          ))}
-        </ul> */}
         {svgs && (
           <ul>
             {Object.keys(svgs)
@@ -151,9 +180,7 @@ export const Routes = () => {
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      // alignItems: 'center',
                       borderLeft: '2px solid #9ca3af',
-                      // borderRight: '2px solid #9ca3af',
                       marginBottom: 32,
                       borderRadius: 8,
                     }}
@@ -174,14 +201,7 @@ export const Routes = () => {
                         }}
                       />
 
-                      <div
-                        style={
-                          {
-                            // position: 'absolute',
-                            // bottom: 8,
-                          }
-                        }
-                      >
+                      <div>
                         <span>In Route: 1,14,16,18,34</span>
                       </div>
                     </div>
@@ -190,10 +210,38 @@ export const Routes = () => {
               })}
           </ul>
         )}
-      </section>
-      <section className={styles.route}>
-        <RouteTree route={route} svgs={svgs}></RouteTree>
-      </section>
-    </main>
+      </aside>
+      <main className={styles.main}>
+        <header style={{padding: 16}}>
+          <h1 style={{fontSize: 20, marginBottom: 16}}>{route.name}</h1>
+          <div style={{fontSize: 24}}>
+            <button
+              type="button"
+              aria-label="previous route"
+              className={styles.routeBtn}
+              onClick={handleRouteDecrement}
+              disabled={routeId === 1}
+            >
+              &#8592; prev
+            </button>
+            <span className={styles.spanText}>
+              Route {route.attributes.id} / {tree.length}
+            </span>
+            <button
+              type="button"
+              aria-label="next route"
+              className={styles.routeBtn}
+              onClick={handleRouteIncrement}
+              disabled={routeId === routes.length}
+            >
+              next &#8594;
+            </button>
+          </div>
+        </header>
+        <section className={styles.route}>
+          <RouteTree route={route} svgs={svgs}></RouteTree>
+        </section>
+      </main>
+    </div>
   )
 }

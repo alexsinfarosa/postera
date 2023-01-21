@@ -103,6 +103,7 @@ const customNode = ({
         <button
           id={nodeDatum.attributes?.id}
           type="button"
+          aria-label="Toggle node"
           name={nodeDatum.name}
           onClick={toggleNode}
           className={styles.resetBtn}
