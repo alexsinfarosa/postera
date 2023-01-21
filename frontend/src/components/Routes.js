@@ -101,11 +101,7 @@ export const Routes = () => {
 
   const fetchRoutes = async () => {
     const response = await fetch('http://localhost:8000/routes')
-    // If using VSCode + windows, try using your IP
-    // instead (see frontent terminal)
-    //const response = await fetch("http://X.X.X.X:8000/routes");
     const newRoutes = await response.json()
-    // console.log(newRoutes.data)
     setRoutes(newRoutes.data)
   }
 

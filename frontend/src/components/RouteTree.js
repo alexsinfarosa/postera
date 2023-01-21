@@ -5,7 +5,6 @@ import {createUseStyles} from 'react-jss'
 const NODE = {
   width: 200,
   height: 300,
-  padding: 10,
 }
 
 const useRoutesStyles = createUseStyles({
@@ -20,7 +19,7 @@ const useRoutesStyles = createUseStyles({
     height: NODE.height,
     border: '1px solid #0284c7',
     borderRadius: 8,
-    padding: Node.padding,
+    padding: '8px',
     color: '#f0f9ff',
     fontSize: 16,
     boxShadow: '0 8px 24px 0 #959DA5',
@@ -36,6 +35,7 @@ const useRoutesStyles = createUseStyles({
     backgroundColor: 'white',
     height: NODE.height / 2,
     borderRadius: 8,
+    marginBottom: 8,
   },
   nodeFooter: {flex: 1, position: 'relative', height: '100%'},
   truncate: {
@@ -53,11 +53,11 @@ const useRoutesStyles = createUseStyles({
     fontSize: 16,
     cursor: 'pointer',
     borderRadius: 8,
-    width: '50%',
-    // margin: '0 auto',
     position: 'absolute',
-    bottom: 8,
+    width: '50%',
     left: '25%',
+    bottom: 0,
+    zIndex: 9999999,
   },
   reactionName: {
     width: '100%',
@@ -73,7 +73,6 @@ const useRoutesStyles = createUseStyles({
     alignItems: 'center',
     justifyContent: 'center',
     wordBreak: 'break-all',
-    // boxShadow: '0 8px 24px 0 #959DA5',
   },
 })
 
@@ -83,10 +82,11 @@ const customNode = ({
   foreignObjectProps,
   svgs,
   styles,
-  reactionName,
 }) => {
   // console.log(nodeDatum)
   const multiplier = 60
+  const isReaction = nodeDatum.attributes?.name
+  const isCollapsed = nodeDatum.__rd3t.collapsed
   return (
     <>
       <foreignObject {...foreignObjectProps}>
@@ -103,24 +103,26 @@ const customNode = ({
 
           <div className={styles.nodeFooter}>
             <p className={styles.truncate}>{nodeDatum.name}</p>
-            {nodeDatum.children.length !== 0 && (
-              <button onClick={toggleNode} className={styles.btn}>
+            {isReaction && (
+              <button
+                onClick={() => console.log('CICCIO!!!!!!!!!!!!!!!!')}
+                className={styles.btn}
+              >
                 {nodeDatum.__rd3t.collapsed ? 'Expand' : 'Collapse'}
               </button>
             )}
           </div>
         </div>
       </foreignObject>
-      {nodeDatum.children.length > 0 && (
+      {isReaction && !isCollapsed && (
         <foreignObject
           width={NODE.width + multiplier}
           height={NODE.height}
           x={-NODE.width / 2 - multiplier / 2}
           y={-NODE.height / 2 + 100}
         >
-          {/* <div className={styles.reactionName}>{reactionName}</div> */}
           <div className={styles.reactionName}>
-            Buchwald-Hartwig amidation with amide-like nucleophile
+            {nodeDatum.attributes?.name}
           </div>
         </foreignObject>
       )}
@@ -142,7 +144,6 @@ export const RouteTree = ({route, svgs}) => {
     x: -NODE.width / 2,
     y: -NODE.height / 2,
   }
-  console.log(foreignObjectProps)
 
   const [dimensions, translate, containerRef] = useCenteredTree()
   return (
@@ -161,7 +162,6 @@ export const RouteTree = ({route, svgs}) => {
             foreignObjectProps,
             svgs,
             styles,
-            reactionName: route.attributes?.name,
           })
         }
         orientation="vertical"
