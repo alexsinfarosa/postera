@@ -81,9 +81,10 @@ const useRoutesStyles = createUseStyles({
     display: 'flex',
   },
   sidebar: {
-    width: 300,
+    padding: 16,
+    width: 400,
     height: '100vh',
-    borderRight: '1px solid #ccc',
+    // borderRight: '1px solid #ccc',
   },
   route: {
     width: '100%',
@@ -95,7 +96,7 @@ const useRoutesStyles = createUseStyles({
 export const Routes = () => {
   const styles = useRoutesStyles()
   const [routes, setRoutes] = useState([])
-  const [routeId, setRouteId] = useState(0)
+  const [routeId, setRouteId] = useState(15)
   const route = tree.find(route => route.attributes.id === routeId)
   const [svgs, setSvgs] = useState(null)
 
@@ -129,8 +130,8 @@ export const Routes = () => {
   return (
     <main className={styles.main}>
       <section className={styles.sidebar}>
-        <h1>Routes</h1>
-        <ul>
+        <h2 style={{marginBottom: 32}}>Shared Molecules</h2>
+        {/* <ul>
           {tree.map((route, i) => (
             <li key={i}>
               <button type="button" onClick={() => setRouteId(i)}>
@@ -138,7 +139,57 @@ export const Routes = () => {
               </button>
             </li>
           ))}
-        </ul>
+        </ul> */}
+        {svgs && (
+          <ul>
+            {Object.keys(svgs)
+              .filter(smiles => smiles !== route.name)
+              .map((smiles, i) => {
+                return (
+                  <li
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      // alignItems: 'center',
+                      borderLeft: '2px solid #9ca3af',
+                      // borderRight: '2px solid #9ca3af',
+                      marginBottom: 32,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div style={{position: 'relative', padding: '2px 10px'}}>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 24,
+                        }}
+                      >
+                        {smiles}
+                      </div>
+                      <span
+                        style={{height: 160, width: 160, display: 'block'}}
+                        dangerouslySetInnerHTML={{
+                          __html: svgs[smiles],
+                        }}
+                      />
+
+                      <div
+                        style={
+                          {
+                            // position: 'absolute',
+                            // bottom: 8,
+                          }
+                        }
+                      >
+                        <span>In Route: 1,14,16,18,34</span>
+                      </div>
+                    </div>
+                  </li>
+                )
+              })}
+          </ul>
+        )}
       </section>
       <section className={styles.route}>
         <RouteTree route={route} svgs={svgs}></RouteTree>

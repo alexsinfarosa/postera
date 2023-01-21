@@ -1,3 +1,4 @@
+import React from 'react'
 import Tree from 'react-d3-tree'
 import {useCenteredTree} from '../hooks/useCenteredTree'
 import {createUseStyles} from 'react-jss'
@@ -10,6 +11,13 @@ const NODE = {
 const useRoutesStyles = createUseStyles({
   container: {
     height: '100%',
+  },
+  resetBtn: {
+    border: 'none',
+    backgroundColor: 'transparent',
+    padding: 0,
+    margin: 0,
+    cursor: 'pointer',
   },
   node: {
     display: 'flex',
@@ -25,6 +33,7 @@ const useRoutesStyles = createUseStyles({
     boxShadow: '0 8px 24px 0 #959DA5',
     flex: 1,
     position: 'relative',
+    cursor: 'pointer',
   },
   svg: {
     width: '100%',
@@ -37,27 +46,12 @@ const useRoutesStyles = createUseStyles({
     borderRadius: 8,
     marginBottom: 8,
   },
-  nodeFooter: {flex: 1, position: 'relative', height: '100%'},
+  nodeFooter: {},
   truncate: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     textAlign: 'center',
-  },
-  btn: {
-    backgroundColor: '#0e7490',
-    border: '1px solid #FFF',
-    color: 'white',
-    padding: '8px 16px',
-    textAlign: 'center',
-    fontSize: 16,
-    cursor: 'pointer',
-    borderRadius: 8,
-    position: 'absolute',
-    width: '50%',
-    left: '25%',
-    bottom: 0,
-    zIndex: 9999999,
   },
   reactionName: {
     width: '100%',
@@ -66,13 +60,27 @@ const useRoutesStyles = createUseStyles({
     padding: '2px 10px',
     backgroundColor: '#fef3c7',
     color: '#854d0e',
-    fontSize: 14,
     bottom: 0,
     borderRadius: 8,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     wordBreak: 'break-all',
+  },
+  molecules: {
+    borderRadius: 8,
+    marginTop: 8,
+    height: '100%',
+    color: 'gray',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f9ff',
+    opacity: 0.6,
+    transition: '0.5s',
+    '&:hover': {
+      opacity: 1,
+    },
   },
 })
 
@@ -82,6 +90,8 @@ const customNode = ({
   foreignObjectProps,
   svgs,
   styles,
+  style,
+  setStyle,
 }) => {
   // console.log(nodeDatum)
   const multiplier = 60
@@ -90,36 +100,49 @@ const customNode = ({
   return (
     <>
       <foreignObject {...foreignObjectProps}>
-        <div className={styles.node}>
-          <div className={styles.svg}>
-            {svgs && (
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: svgs[nodeDatum.name],
-                }}
-              />
-            )}
-          </div>
+        <button
+          id={nodeDatum.attributes?.id}
+          type="button"
+          name={nodeDatum.name}
+          onClick={toggleNode}
+          className={styles.resetBtn}
+          onMouseEnter={e => {
+            if (e.currentTarget.name === nodeDatum.name) {
+              setStyle({display: 'block'})
+            }
+          }}
+          onMouseLeave={e => {
+            if (e.currentTarget.name === nodeDatum.name) {
+              setStyle({display: 'none'})
+            }
+          }}
+        >
+          <div className={styles.node}>
+            <div className={styles.svg}>
+              {svgs && (
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: svgs[nodeDatum.name],
+                  }}
+                />
+              )}
+            </div>
 
-          <div className={styles.nodeFooter}>
-            <p className={styles.truncate}>{nodeDatum.name}</p>
-            {isReaction && (
-              <button
-                onClick={() => console.log('CICCIO!!!!!!!!!!!!!!!!')}
-                className={styles.btn}
-              >
-                {nodeDatum.__rd3t.collapsed ? 'Expand' : 'Collapse'}
-              </button>
-            )}
+            <div className={styles.nodeFooter}>
+              <p className={styles.truncate}>{nodeDatum.name}</p>
+              <p className={styles.molecules} style={style}>
+                Ciccio!!!
+              </p>
+            </div>
           </div>
-        </div>
+        </button>
       </foreignObject>
       {isReaction && !isCollapsed && (
         <foreignObject
           width={NODE.width + multiplier}
-          height={NODE.height}
+          height={multiplier}
           x={-NODE.width / 2 - multiplier / 2}
-          y={-NODE.height / 2 + 100}
+          y={NODE.height - 110}
         >
           <div className={styles.reactionName}>
             {nodeDatum.attributes?.name}
@@ -131,6 +154,7 @@ const customNode = ({
 }
 
 export const RouteTree = ({route, svgs}) => {
+  const [style, setStyle] = React.useState({display: 'none'})
   const styles = useRoutesStyles()
 
   const nodeSize = {
@@ -162,6 +186,8 @@ export const RouteTree = ({route, svgs}) => {
             foreignObjectProps,
             svgs,
             styles,
+            style,
+            setStyle,
           })
         }
         orientation="vertical"

@@ -12,6 +12,7 @@ const useGlobalStyles = createUseStyles({
     'img, picture, video, canvas, svg': {display: 'block', maxWidth: '100%'},
     'input, button, textarea, select': {font: 'inherit'},
     'p, h1, h2, h3, h4, h5, h6': {overflowWrap: 'break-word'},
+    'ul, ol': {padding: '0', margin: 0, listStyle: 'none'},
   },
 })
 function App() {
