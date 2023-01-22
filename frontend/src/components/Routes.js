@@ -213,7 +213,17 @@ export const Routes = () => {
       </aside>
       <main className={styles.main}>
         <header style={{padding: 16}}>
-          <h1 style={{fontSize: 20, marginBottom: 16}}>{route.name}</h1>
+          <h1>Explore Routes</h1>
+          <h2
+            style={{
+              fontSize: 20,
+              marginBottom: 16,
+              color: '#64748b',
+              fontWeight: 'bold',
+            }}
+          >
+            {route.name}
+          </h2>
           <div style={{fontSize: 24}}>
             <button
               type="button"
