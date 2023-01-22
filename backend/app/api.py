@@ -47,23 +47,27 @@ def make_routes():
         if len(reactions) == 1:
             node = {
                 'name': reactions[0]['target'],
-                'attributes': {'id': i, 'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections'], 'reaction': reactions[0]},
+                'attributes': {'id': i, 'name': reactions[0]['name'], 'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections'], 'reaction': reactions[0]},
                 'children': list(map(make_node, reactions[0]['sources']))
             }
             tree['children'].append(node)
         else:
-            node = {
-                'name': reactions[0]['target'],
-                'attributes': {'id': i, 'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections'], 'reaction': reactions[0]},
-                'children': []
-            }
-            for reaction in reactions:
-                node['children'].append({
-                    'name': reaction['target'],
-                    'attributes': {'reaction': reaction},
-                    'children': list(map(make_node, reaction['sources']))
-                })
-            tree['children'].append(node)
+            for reactionI in reactions:
+                parent = {}
+                for reactionJ in reactions:
+                    if reactionI['target'] in reactionJ['sources']:
+                        found = reactionJ
+                        if found:
+                            parent = {
+                                'name': found['target'],
+                                'attributes': {'id': i, 'name': found['name'], 'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections'], 'reaction': found},
+                                'children': list(map(make_node, found['sources']))
+                            }
+                            for child in parent['children']:
+                                if child['name'] == reactionI['target']:
+                                    child['attributes'] = {'name': reactionI['name'], 'molecules': route['molecules'],'reaction': reactionI}
+                                    child['children'] = list(map(make_node, reactionI['sources']))
+                        tree['children'].append(parent)
     return tree
 
 def draw_molecule(smiles: str):

@@ -2,9 +2,6 @@ import React, {useEffect, useState} from 'react'
 import {createUseStyles} from 'react-jss'
 import {RouteTree} from './RouteTree'
 
-// import {tree} from '../tree'
-// console.log(tree)
-
 // use jss styling
 const useRoutesStyles = createUseStyles({
   container: {
@@ -49,20 +46,9 @@ const useRoutesStyles = createUseStyles({
   },
 })
 
-// function getSmiles(tree) {
-//   let smiles = []
-//   function recurse(node) {
-//     smiles.push(node.name)
-//     node.children.forEach(child => recurse(child))
-//   }
-//   tree.children.forEach(child => recurse(child))
-//   return smiles
-// }
-
 export const Routes = () => {
   const styles = useRoutesStyles()
   const [routes, setRoutes] = useState([])
-  console.log(routes)
   const [routeId, setRouteId] = useState(1)
   const route = routes.find(route => route.attributes.id === routeId)
   const [svgs, setSvgs] = useState(null)
@@ -110,7 +96,7 @@ export const Routes = () => {
       setRouteId(routeId - 1)
     }
   }
-  if (routes.length === 0) return null
+
   return (
     <div className={styles.container}>
       <aside className={styles.sidebar}>
@@ -157,7 +143,7 @@ export const Routes = () => {
           </ul>
         )}
       </aside>
-      {route && (
+      {route ? (
         <main className={styles.main}>
           <header style={{padding: 16}}>
             <h1>Explore Routes</h1>
@@ -198,6 +184,12 @@ export const Routes = () => {
           <section className={styles.route}>
             <RouteTree route={route} svgs={svgs}></RouteTree>
           </section>
+        </main>
+      ) : (
+        <main className={styles.main}>
+          <header style={{padding: 16}}>
+            <h1>Route Not Found</h1>
+          </header>
         </main>
       )}
     </div>
