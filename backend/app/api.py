@@ -41,18 +41,30 @@ def make_routes():
     def make_node(name):
         return {'name': name, 'children': []}
 
-    routes = []
+    tree = {'name': 'root', 'children': []}
     for i, route in enumerate(data, start=1):
-        name = 'route-' + str(i)
-        attributes = {'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections']}
-        children = []
-
-        for reaction in route['reactions']:
-            children.append({'name': reaction['target'], 'attributes': {'reactionName': reaction['name']}, 'children': list(map(make_node, reaction['sources']))})
-
-        routes.append({'name': name, 'attributes': attributes, 'children': children})
-
-    return routes
+        reactions = route['reactions']
+        if len(reactions) == 1:
+            node = {
+                'name': reactions[0]['target'],
+                'attributes': {'id': i, 'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections'], 'reaction': reactions[0]},
+                'children': list(map(make_node, reactions[0]['sources']))
+            }
+            tree['children'].append(node)
+        else:
+            node = {
+                'name': reactions[0]['target'],
+                'attributes': {'id': i, 'score': route['score'], 'molecules': route['molecules'], 'disconnections': route['disconnections'], 'reaction': reactions[0]},
+                'children': []
+            }
+            for reaction in reactions:
+                node['children'].append({
+                    'name': reaction['target'],
+                    'attributes': {'reaction': reaction},
+                    'children': list(map(make_node, reaction['sources']))
+                })
+            tree['children'].append(node)
+    return tree
 
 def draw_molecule(smiles: str):
     mol = Chem.MolFromSmiles(smiles)
