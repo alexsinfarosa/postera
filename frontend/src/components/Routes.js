@@ -10,13 +10,14 @@ const useRoutesStyles = createUseStyles({
   },
   sidebar: {
     padding: 16,
-    width: '30%',
+    width: '25%',
   },
   main: {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
     overflow: 'auto',
+    backgroundColor: '#f8fafc',
   },
   route: {
     width: '100%',
@@ -36,7 +37,7 @@ const useRoutesStyles = createUseStyles({
       backgroundColor: '#f8fafc',
     },
     '&:disabled': {
-      opacity: '0.5',
+      opacity: '0.65',
       cursor: 'not-allowed',
     },
   },
@@ -52,6 +53,28 @@ export const Routes = () => {
   const [routeId, setRouteId] = useState(1)
   const route = routes.find(route => route.attributes.id === routeId)
   const [svgs, setSvgs] = useState(null)
+
+  // an array of unique molecule smiles
+  const molecules = []
+  routes.forEach(route => {
+    route.attributes.molecules.forEach(mol => {
+      if (!molecules.includes(mol.smiles)) {
+        molecules.push(mol.smiles)
+      }
+    })
+  })
+
+  // an object of smiles to route ids
+  const moleculesRoutes = {}
+  molecules.forEach(mol => {
+    moleculesRoutes[mol] = []
+  })
+  routes.forEach(route => {
+    route.attributes.molecules.forEach(mol => {
+      moleculesRoutes[mol.smiles].push(route.attributes.id)
+    })
+  })
+  // console.log(moleculesRoutes)
 
   const fetchRoutes = async () => {
     const response = await fetch('http://localhost:8000/routes')
@@ -134,7 +157,9 @@ export const Routes = () => {
                       />
 
                       <div>
-                        <span>In Route: 1,14,16,18,34</span>
+                        <span style={{overflowWrap: 'break-word'}}>
+                          In Route: {moleculesRoutes[smiles].join(',')}
+                        </span>
                       </div>
                     </div>
                   </li>

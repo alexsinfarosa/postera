@@ -82,6 +82,23 @@ const useRoutesStyles = createUseStyles({
       opacity: 1,
     },
   },
+  builingBlock: {
+    display: 'flex',
+    padding: '2px 0',
+    justifyContent: 'end',
+    marginBottom: 4,
+    height: 24,
+  },
+  badges: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    borderRadius: 4,
+    backgroundColor: '#f1f5f9',
+    padding: '2px 8px',
+    fontSize: 12,
+    color: '#1e293b',
+    fontWeight: 400,
+  },
 })
 
 const customNode = ({
@@ -92,11 +109,20 @@ const customNode = ({
   styles,
   style,
   setStyle,
+  molecules,
+  handleNodeMouseEnter,
+  handleNodeMouseLeave,
 }) => {
   // console.log(nodeDatum)
   const multiplier = 60
   const isReaction = nodeDatum.attributes?.name
   const isCollapsed = nodeDatum.__rd3t.collapsed
+
+  const molecule = molecules.filter(
+    molecule => molecule.smiles === nodeDatum.name,
+  )[0]
+  // console.log(molecule)
+
   return (
     <>
       <foreignObject {...foreignObjectProps}>
@@ -107,18 +133,15 @@ const customNode = ({
           name={nodeDatum.name}
           onClick={toggleNode}
           className={styles.resetBtn}
-          onMouseEnter={e => {
-            if (e.currentTarget.name === nodeDatum.name) {
-              setStyle({display: 'block'})
-            }
-          }}
-          onMouseLeave={e => {
-            if (e.currentTarget.name === nodeDatum.name) {
-              setStyle({display: 'none'})
-            }
-          }}
+          onMouseEnter={e => handleNodeMouseEnter(e)}
+          onMouseLeave={e => handleNodeMouseLeave(e)}
         >
           <div className={styles.node}>
+            <div className={styles.builingBlock}>
+              {molecule.is_building_block && (
+                <span className={styles.badges}>BB</span>
+              )}
+            </div>
             <div className={styles.svg}>
               {svgs && (
                 <span
@@ -131,9 +154,6 @@ const customNode = ({
 
             <div className={styles.nodeFooter}>
               <p className={styles.truncate}>{nodeDatum.name}</p>
-              <p className={styles.molecules} style={style}>
-                Ciccio!!!
-              </p>
             </div>
           </div>
         </button>
@@ -145,8 +165,10 @@ const customNode = ({
           x={-NODE.width / 2 - multiplier / 2}
           y={NODE.height - 110}
         >
-          <div className={styles.reactionName}>
-            {nodeDatum.attributes?.name}
+          <div style={style}>
+            <div className={styles.reactionName}>
+              {nodeDatum.attributes?.name}
+            </div>
           </div>
         </foreignObject>
       )}
@@ -155,8 +177,31 @@ const customNode = ({
 }
 
 export const RouteTree = ({route, svgs}) => {
-  const [style, setStyle] = React.useState({display: 'none'})
+  const [style, setStyle] = React.useState({
+    opacity: 0.0,
+    transition: '0.5s',
+  })
   const styles = useRoutesStyles()
+
+  const handleNodeMouseEnter = e => {
+    if (e.currentTarget.name === route.name) {
+      setStyle({
+        opacity: 1,
+        transition: '0.5s',
+      })
+    }
+  }
+
+  const handleNodeMouseLeave = e => {
+    if (e.currentTarget.name === route.name) {
+      setStyle({
+        opacity: 0,
+        transition: '0.5s',
+      })
+    }
+  }
+
+  const molecules = route.attributes.molecules
 
   const nodeSize = {
     x: NODE.width + NODE.width / 2,
@@ -189,6 +234,9 @@ export const RouteTree = ({route, svgs}) => {
             styles,
             style,
             setStyle,
+            molecules,
+            handleNodeMouseEnter,
+            handleNodeMouseLeave,
           })
         }
         orientation="vertical"
