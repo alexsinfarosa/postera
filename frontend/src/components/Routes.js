@@ -38,9 +38,11 @@ const useRoutesStyles = createUseStyles({
 export const Routes = () => {
   const styles = useRoutesStyles()
   const [routes, setRoutes] = useState([])
+  const [routesError, setRoutesError] = useState(null)
   const [routeId, setRouteId] = useState(1)
   const route = routes.find(route => route.attributes.id === routeId)
   const [svgs, setSvgs] = useState(null)
+  const [svgsError, setSvgsError] = useState(null)
 
   const molecules = []
   routes.forEach(route => {
@@ -64,7 +66,8 @@ export const Routes = () => {
   const fetchRoutes = async () => {
     const response = await fetch('http://localhost:8000/routes')
     if (!response.ok) {
-      throw new Error(`Unable to fetch routes - Error: ${response.status}`)
+      setRoutesError('Unable to fetch routes')
+      return
     }
 
     const newRoutes = await response.json()
@@ -81,7 +84,8 @@ export const Routes = () => {
     const errors = responses.filter(res => res.status === 'rejected')
     if (errors.length > 0) {
       console.error(errors)
-      throw new Error('Unable to fetch molecule images')
+      setSvgsError('Unable to fetch molecule images')
+      return
     }
 
     const jsons = await Promise.all(responses.map(res => res.value.json()))
@@ -114,9 +118,12 @@ export const Routes = () => {
             moleculesRoutes={moleculesRoutes}
           ></MoleculeList>
         ) : (
-          <h2 className={styles.header}>Molecule images not found</h2>
+          <h2 className={styles.header} id="svgsError">
+            {svgsError}
+          </h2>
         )}
       </aside>
+
       {route ? (
         <main className={styles.main}>
           <Header
@@ -132,7 +139,7 @@ export const Routes = () => {
       ) : (
         <main className={styles.main}>
           <header style={{padding: 16}}>
-            <h2 className={styles.header}>Route not found</h2>
+            <h2 className={styles.header}>{routesError}</h2>
           </header>
         </main>
       )}
