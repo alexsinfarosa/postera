@@ -125,7 +125,7 @@ export const Routes = () => {
       </aside>
 
       {route ? (
-        <main className={styles.main}>
+        <div className={styles.main}>
           <Header
             routes={routes}
             route={route}
@@ -135,13 +135,13 @@ export const Routes = () => {
           <section className={styles.route}>
             <RouteTree route={route} svgs={svgs}></RouteTree>
           </section>
-        </main>
+        </div>
       ) : (
-        <main className={styles.main}>
+        <div className={styles.main}>
           <header style={{padding: 16}}>
             <h2 className={styles.header}>{routesError}</h2>
           </header>
-        </main>
+        </div>
       )}
     </div>
   )
