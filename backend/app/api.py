@@ -35,7 +35,8 @@ def make_routes():
     # TODO: use this method to return routes as a tree data structure.
     # routes are found in the routes.json file
     data = []
-    with open("/Users/alex/code/webdev_interview_challenge-master/backend/app/routes.json", 'r+') as f:
+    # TODO: change this to your path...
+    with open("/Users/alex/code/postera/backend/app/routes.json", 'r+') as f:
         data = json.load(f)
 
     def make_node(name):
