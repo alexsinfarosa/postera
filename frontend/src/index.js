@@ -19,7 +19,6 @@ function App() {
   useGlobalStyles()
   return (
     <main>
-      {/* <Header /> */}
       <Routes />
     </main>
   )

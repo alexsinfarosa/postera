@@ -46,7 +46,6 @@ const useRoutesStyles = createUseStyles({
     borderRadius: 8,
     marginBottom: 8,
   },
-  nodeFooter: {},
   truncate: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -66,21 +65,6 @@ const useRoutesStyles = createUseStyles({
     alignItems: 'center',
     justifyContent: 'center',
     wordBreak: 'break-all',
-  },
-  molecules: {
-    borderRadius: 8,
-    marginTop: 8,
-    height: '100%',
-    color: 'gray',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f9ff',
-    opacity: 0.6,
-    transition: '0.5s',
-    '&:hover': {
-      opacity: 1,
-    },
   },
   builingBlock: {
     display: 'flex',
@@ -113,7 +97,6 @@ const customNode = ({
   handleNodeMouseEnter,
   handleNodeMouseLeave,
 }) => {
-  // console.log(nodeDatum)
   const multiplier = 60
   const isReaction = nodeDatum.attributes?.name
   const isCollapsed = nodeDatum.__rd3t.collapsed
@@ -121,7 +104,6 @@ const customNode = ({
   const molecule = molecules.filter(
     molecule => molecule.smiles === nodeDatum.name,
   )[0]
-  // console.log(molecule)
 
   return (
     <>
@@ -129,7 +111,7 @@ const customNode = ({
         <button
           id={nodeDatum.attributes?.id}
           type="button"
-          aria-label="Toggle node"
+          aria-label="Toggle node molecule"
           name={nodeDatum.name}
           onClick={toggleNode}
           className={styles.resetBtn}
@@ -151,10 +133,7 @@ const customNode = ({
                 />
               )}
             </div>
-
-            <div className={styles.nodeFooter}>
-              <p className={styles.truncate}>{nodeDatum.name}</p>
-            </div>
+            <p className={styles.truncate}>{nodeDatum.name}</p>
           </div>
         </button>
       </foreignObject>
@@ -223,6 +202,7 @@ export const RouteTree = ({route, svgs}) => {
         translate={translate}
         dimensions={dimensions}
         nodeSize={nodeSize}
+        zoom={0.7}
         separation={separation}
         transitionDuration="1000"
         pathFunc="step"
